@@ -1,0 +1,7 @@
+{
+    "port":5009,
+    "webhook":{
+        "enabled":false,
+        "path":""
+    }
+}
