@@ -5,6 +5,7 @@
 > Used to get a QR Code to Log into Whatsapp Web
 	- If not logged in, returns a **QR Code**
 	- If logged in, returns a "Authenticated" message.
+	mi propio redme http://localhost:5009/apiW/auth/getqr
 
 ## Chat
 <u>Sending Messages</u>

@@ -20,6 +20,7 @@ const app = express();
 const port = process.env.PORT || config.port;
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 client.on('qr', qr => {
@@ -66,12 +67,12 @@ app.use(function(req,res,next){
     console.log(req.method + ' : ' + req.path);
     next();
 });
-app.use('/apiW/chat',chatRoute);
-app.use('/apiW/group',groupRoute);
-app.use('/apiW/auth',authRoute);
-app.use('/apiW/contact',contactRoute);
+app.use('/chat',chatRoute);
+app.use('/group',groupRoute);
+app.use('/auth',authRoute);
+app.use('/contact',contactRoute);
 
 app.listen(port, () => {
-    //console.log("Server Running Live on Port : " + port);
+    //mi propio redme http://localhost:5009/apiW/auth/getqr
     console.log(`Run: http://127.0.0.1:${port}`);
 });

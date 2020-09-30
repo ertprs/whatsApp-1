@@ -63,6 +63,76 @@ router.post('/sendimage/:phone', async (req,res) => {
     }
 });
 
+router.post('/sendpdf/:phone', async (req,res) => {
+    var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+
+    let phone = req.params.phone;
+    let doc = req.body.doc;
+
+    if(phone==undefined||doc==undefined){
+        res.send({status:"error",message:"please enter valid phone and base64/url of image"})
+    }else{
+        if(base64regex.test(doc)){
+            let media = new MessageMedia('application/pdf',doc);
+            client.sendMessage(phone+'@c.us',media).then((response)=>{
+                if(response.id.fromMe){
+                    res.send({status:'success',message:'MediaMessage successfully sent to '+phone})
+                }
+            });
+        }else if(vuri.isWebUri(image)){
+            if (!fs.existsSync('./temp')){
+                await fs.mkdirSync('./temp');
+            }
+            var path = './temp/' + image.split("/").slice(-1)[0]
+            mediadownloader(image,path,()=>{
+                let media = MessageMedia.fromFilePath(path);
+                client.sendMessage(phone+'@c.us',media,{caption:caption||""}).then((response)=>{
+                    if(response.id.fromMe){
+                        res.send({status:'success',message:'MediaMessage successfully sent to '+phone})
+                    }
+                });
+            })
+        }else{
+            res.send({status:'error',message:'Invalid URL/Base64 Encoded Media'})
+        }
+    }
+});
+
+router.post('/sendvideo/:phone', async (req,res) => {
+    var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+
+    let phone = req.params.phone;
+    let video = req.body.video;
+    let caption = req.body.caption;
+
+    if(phone==undefined||video==undefined){
+        res.send({status:"error",message:"please enter valid phone and base64/url of video"})
+    }else{
+        if(base64regex.test(video)){
+            let media = new MessageMedia('video/mp4',video);
+            client.sendMessage(phone+'@c.us',media,{caption:caption||""}).then((response)=>{
+                if(response.id.fromMe){
+                    res.send({status:'success',message:'MediaMessage successfully sent to '+phone})
+                }
+            });
+        }else if(vuri.isWebUri(video)){
+            if (!fs.existsSync('./temp')){
+                await fs.mkdirSync('./temp');
+            }
+            var path = './temp/' + video.split("/").slice(-1)[0]
+            mediadownloader(video,path,()=>{
+                let media = MessageMedia.fromFilePath(path);
+                client.sendMessage(phone+'@c.us',media,{caption:caption||""}).then((response)=>{
+                    if(response.id.fromMe){
+                        res.send({status:'success',message:'MediaMessage successfully sent to '+phone})
+                    }
+                });
+            })
+        }else{
+            res.send({status:'error',message:'Invalid URL/Base64 Encoded Media'})
+        }
+    }
+});
 
 router.post('/sendlocation/:phone', async (req,res) => {
     let phone = req.params.phone;
