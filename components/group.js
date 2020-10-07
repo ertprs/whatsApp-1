@@ -33,38 +33,54 @@ router.post('/sendmessage/:chatname', async (req,res) => {
     }
 });
 
-router.post('/sendimage/:chatname', async (req,res) => {
+router.post('/sendmedia/:chatname', async (req,res) => {
     var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+    let chatname = req.params.chatname; //campo obligatorio
+    let data = req.body.media;//campo obligatorio
+    let caption = req.body.caption;// campo opcional
+    let type = req.body.type;// campo obligatorio
+    let filename = req.body.title;// campo opcional
 
-    let chatname = req.params.chatname;
-    let image = req.body.image;
-    let caption = req.body.caption;
-
-    if(chatname==undefined||image==undefined){
-        res.send({status:"error",message:"please enter valid chatname and base64/url of image"})
+    if(chatname==undefined||data==undefined){
+        res.send({status:"error",message:"please enter valid chatname and base64/url of file"})
     }else{
-        if(base64regex.test(image)){
-            client.getChats().then((data) => {
-                data.forEach(chat => {
+        if(base64regex.test(data)){
+            client.getChats().then((datac) => {
+                datac.forEach(chat => {
                     if(chat.id.server==="g.us" && chat.name===chatname){
                         if (!fs.existsSync('./temp')){
                             fs.mkdirSync('./temp');
                         }
-                        let media = new MessageMedia('image/png',image);
-                        client.sendMessage(chat.id._serialized,media,{caption:caption||""}).then((response)=>{
-                            if(response.id.fromMe){
-                                res.send({status:'success',message:'Message successfully send to '+chatname})
-                            }
-                        });
+                        let media = new MessageMedia(type, data, filename);
+                        if (type.indexOf("application") >= 0) {
+                            client.sendMessage(chat.id._serialized, media).then((response) => {
+                                if (response.id.fromMe) {
+                                    res.send({
+                                        status: 'success',message: 'MediaMessage successfully sent to ' + chatname
+                                    })
+                                }
+                            });
+                        }
+                        else{
+                            client.sendMessage(chat.id._serialized, media, {caption: caption || "",sendAudioAsVoice: true}).then((response) => {
+                                if (response.id.fromMe) {
+                                    res.send({
+                                        status: 'success',message: 'MediaMessage successfully sent to ' + chatname
+                                    })
+                                }
+                            }).catch(error => {
+                                console.log('caught', error.message);
+                            });
+                        }
                     }
                 });     
             });
-        }else if(vuri.isWebUri(image)){
-            var path = './temp/' + image.split("/").slice(-1)[0]
-            client.getChats().then((data) => {
-                data.forEach(chat => {
+        }else if(vuri.isWebUri(data)){
+            var path = './temp/' + data.split("/").slice(-1)[0]
+            client.getChats().then((datac) => {
+                datac.forEach(chat => {
                     if(chat.id.server==="g.us" && chat.name===chatname){
-                        mediadownloader(image,path,()=>{
+                        mediadownloader(data,path,()=>{
                             let media = MessageMedia.fromFilePath(path);
                             client.sendMessage(chat.id._serialized,media,{caption:caption||""}).then((response)=>{
                                 if(response.id.fromMe){
