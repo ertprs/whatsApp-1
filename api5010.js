@@ -24,8 +24,8 @@ global.authed = false;
 const app = express();
 
 app.use(cors()); //para las los frontend que trabajan con cors (opcional)
-app.use(bodyParser.json({limit: '50mb'})); //el limite 
-app.use(bodyParser.urlencoded({limit: '50mb','extended': 'true',parameterLimit: 50000})); //el limite 
+app.use(bodyParser.json({limit: '100mb'})); //el limite 
+app.use(bodyParser.urlencoded({limit: '100mb','extended': 'true',parameterLimit: 100000})); //el limite 
 
 client.on('qr', qr => {
     fs.writeFileSync(`./components/last${global.port}.qr`, qr);
@@ -59,14 +59,6 @@ client.on('ready', () => {
     console.log(fechaServer(), 'Client is ready!');
 });
 
-/*client.on('message', msg => {//historial creo
-    if (config.webhook.enabled) {
-        axios.post(config.webhook.path, {
-            msg: msg
-        })
-    }
-})*/
-
 client.on('disconnected', (reason) => {
     console.log(fechaServer(), 'Client was logged out', reason);
     if (fs.existsSync(`./sesiones/session${global.port}.json`)) {
@@ -84,6 +76,13 @@ client.on('message_create', (msg) => {
     }
 });
 
+client.on('change_battery', (batteryInfo) => {
+    // Battery percentage for attached device has changed
+    const {battery,plugged} = batteryInfo;
+    //console.log(fechaServer(), `Battery: ${battery}% - Charging? ${plugged}`);
+    if(batteryInfo.battery<=20 && !batteryInfo.plugged)
+    console.log(fechaServer(), "La carga descendió del 20%");
+});
 client.initialize();
 
 const chatRoute = require('./components/chatting');
