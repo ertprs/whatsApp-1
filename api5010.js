@@ -6,6 +6,10 @@ const cors = require('cors');
 const config = require('./configs/config5010.json'); //la debo de sacar con el http-server
 const {Client} = require('whatsapp-web.js');
 global.port = process.env.PORT || config.port;
+global.passwordAdmin = config.passwordAdmin;
+global.numTecnico= config.numTecnico;
+global.responsable = config.responsable;
+
 var SESSION_FILE_PATH = "";
 let sessionCfg;
 if (fs.existsSync(`./sesiones/session${port}.json`)) {
@@ -76,12 +80,17 @@ client.on('message_create', (msg) => {
     }
 });
 
-client.on('change_battery', (batteryInfo) => {
+client.on('change_battery', (batteryInfo) => {//para aux1 y aux2
     // Battery percentage for attached device has changed
     const {battery,plugged} = batteryInfo;
-    //console.log(fechaServer(), `Battery: ${battery}% - Charging? ${plugged}`);
-    if(batteryInfo.battery<=20 && !batteryInfo.plugged)
-    console.log(fechaServer(), "La carga descendió del 20%");
+    if(batteryInfo.battery<=config.avisocarga && !batteryInfo.plugged){
+        console.log(fechaServer(), "La carga descendió del "+config.avisocarga+"%");
+        let message="Buen día, le informamos que la base celular reporta un descenso de carga eléctrica del "+config.avisocarga+"% *!Por favor conectar el cargador!*" ;
+        client.sendMessage(config.responsable + '@c.us',  message );
+        if(config.personaAux!=null)
+            client.sendMessage(config.personaAux + '@c.us',  message );
+    }
+    
 });
 client.initialize();
 
@@ -107,7 +116,23 @@ app.listen(global.port, () => { //para imprimir en consola el puerto que esta en
 });
 
 const fechaServer = () => {
-    var fecha= new Date();
-    var strFecha= "["+fecha.getDate() + "-" +(fecha.getMonth()+1)+ "-" + fecha.getFullYear() + " " +fecha.getHours() +":"+fecha.getMinutes()+ ":"+ fecha.getSeconds() +"]";
+    let fecha= new Date();
+    let fechaM=fecha.getMonth()+1;
+    let fechaD= fecha.getDate();
+    let fechaH= fecha.getHours();
+    let fechaMin= fecha.getMinutes();
+    let fechaSg= fecha.getMinutes();
+    if(fechaM<10)
+    fechaM="0"+fechaM;
+    if(fechaD<10)
+    fechaD="0"+fechaD;
+    if(fechaH<10)
+    fechaH="0"+fechaH;
+    if(fechaMin<10)
+    fechaMin="0"+fechaMin;
+    if(fechaSg<10)
+    fechaSg="0"+fechaSg;
+
+    var strFecha= "["+fecha.getFullYear() + "-" +fechaM+ "-" + fechaD + " " +fechaH +":"+fechaMin+ ":"+ fechaSg +"]";
     return strFecha;
 }

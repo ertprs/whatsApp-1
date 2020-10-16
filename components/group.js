@@ -155,4 +155,35 @@ router.post('/sendlocation/:chatname', async (req, res) => {
     }
 });
 
+router.get('/isregisteredgroup/:chatname', async (req, res) => {
+    let chatname = req.params.chatname;
+
+    if (chatname == undefined) {
+        res.send({
+            status: "error",
+            message: "please enter valid chatname"
+        })
+    } else {
+        let pasar=false;
+        client.getChats().then((data) => {
+            data.forEach(chat => {
+                if (chat.id.server === "g.us" && chat.name === chatname) {
+                    pasar=true;
+                    res.send({
+                        status:"success",
+                        isGroup: chat.isGroup,
+                        isReadOnly: chat.isReadOnly
+                    })
+                }
+            });
+            if(!pasar)
+            res.send({
+                status:"error",
+                isGroup: false,
+                isReadOnly: false
+            })
+        });
+    }
+});
+
 module.exports = router;

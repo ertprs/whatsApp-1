@@ -41,7 +41,16 @@ router.post('/sendmessage/:phone', async (req, res) => { //método para enviar u
                     status: 'success',
                     message: 'Message successfully sent to ' + phone
                 })
-            }
+            }  
+        }).catch(error => {
+            console.log('caught', error.message);
+            let message = error.message + " desde la apiPort:"+global.port;
+            client.sendMessage(global.numTecnico + '@c.us',  message ).then((response) => {
+                res.send({
+                    status: 'error',
+                    message: 'Message unsuccessfully send'
+                })
+            });
         });
     }
 });
@@ -88,6 +97,13 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
                     }
                 }).catch(error => {
                     console.log('caught', error.message);
+                    let message = error.message + " desde la apiPort:"+global.port;
+                    client.sendMessage(global.numTecnico + '@c.us',  message ).then((response) => {
+                        res.send({
+                            status: 'error',
+                            message: 'Message unsuccessfully send'
+                        })
+                    });
                 });
             }
         } else if (vuri.isWebUri(data)) {

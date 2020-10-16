@@ -3,5 +3,10 @@
     "webhook":{
         "enabled":false,
         "path":""
-    }
+    },
+    "passwordAdmin": "12345A",
+    "responsable": "593983068302",
+    "numTecnico": "593984958499",
+    "personaAux": null,
+    "avisocarga": 20
 }
