@@ -14,6 +14,7 @@ const mediadownloader = (url, path, callback) => {
             .on('close', callback)
     })
 }
+
 const verificarNum = (phone) => {
     while (phone.indexOf("+") >= 0 || phone.indexOf("-") >= 0 || phone.indexOf(" ") >= 0 || phone.indexOf("(") >= 0 || phone.indexOf(")") >= 0) {
         phone = phone.replace("+", "");
@@ -22,6 +23,8 @@ const verificarNum = (phone) => {
         phone = phone.replace("(", "");
         phone = phone.replace(")", "");
     }
+    if(phone.startsWith("52") && !phone.startsWith("521"))
+        phone = phone.replace("52", "521");
     return phone;
 }
 

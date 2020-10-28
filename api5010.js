@@ -80,12 +80,12 @@ client.on('message_create', (msg) => {
     }
 });
 
-client.on('change_battery', (batteryInfo) => {//para aux1 y aux2
+client.on('change_battery', (batteryInfo) => {
     // Battery percentage for attached device has changed
     const {battery,plugged} = batteryInfo;
     if(batteryInfo.battery<=config.avisocarga && !batteryInfo.plugged){
         console.log(fechaServer(), "La carga descendió del "+config.avisocarga+"%");
-        let message="Buen día, le informamos que la base celular reporta un descenso de carga eléctrica del "+config.avisocarga+"% *!Por favor conectar el cargador!*" ;
+        let message="Buen día, le informamos que la base celular reporta un descenso de carga eléctrica al "+batteryInfo.battery+"% \n *!Por favor conectar el cargador!*" ;
         client.sendMessage(config.responsable + '@c.us',  message );
         if(config.personaAux!=null)
             client.sendMessage(config.personaAux + '@c.us',  message );

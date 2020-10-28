@@ -1,5 +1,18 @@
 const router = require('express').Router();
 
+const verificarNum = (phone) => {
+    while (phone.indexOf("+") >= 0 || phone.indexOf("-") >= 0 || phone.indexOf(" ") >= 0 || phone.indexOf("(") >= 0 || phone.indexOf(")") >= 0) {
+        phone = phone.replace("+", "");
+        phone = phone.replace("-", "");
+        phone = phone.replace(" ", "");
+        phone = phone.replace("(", "");
+        phone = phone.replace(")", "");
+    }
+    if(phone.startsWith("52") && !phone.startsWith("521"))
+        phone = phone.replace("52", "521");
+    return phone;
+}
+
 router.get('/getcontacts', (req, res) => {
     client.getContacts().then((contacts) => {
         res.send(JSON.stringify(contacts));
@@ -8,7 +21,7 @@ router.get('/getcontacts', (req, res) => {
 
 router.get('/getcontact/:phone', async (req, res) => {
     let phone = req.params.phone;
-
+    phone = verificarNum(phone);
     if (phone != undefined) {
         client.getContactById(phone + '@c.us').then((contact) => {
             res.send(JSON.stringify(contact));
@@ -23,6 +36,7 @@ router.get('/getcontact/:phone', async (req, res) => {
 
 router.get('/getprofilepic/:phone', async (req, res) => {
     let phone = req.params.phone;
+    phone = verificarNum(phone);
     if (phone != undefined) {
         client.getProfilePicUrl(phone + '@c.us').then((imgurl) => {
             if (imgurl) {
@@ -42,12 +56,13 @@ router.get('/getprofilepic/:phone', async (req, res) => {
 
 router.get('/isregistereduser/:phone', async (req, res) => {
     let phone = req.params.phone;
+    phone = verificarNum(phone);
     if (phone != undefined) {
         client.isRegisteredUser(phone + '@c.us').then((is) => {
             if (is)
                 res.send({
                     status: 'success',
-                    message: phone + ' is a whatsapp user'
+                    message: phone + ' is a whatsapp user',
                 });
             else
                 res.send({
