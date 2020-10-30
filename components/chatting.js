@@ -77,16 +77,29 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
         if (base64regex.test(data)) { //comprueba si es que el campo image que contiene la base64 es correcta
             let media = new MessageMedia(type, data, filename); //el messageMedia recive 3 parametros: el mimetype(applicacion o image o audio),la base 64, y el nombre del archivo(opcional)
             if (type.indexOf("application") >= 0) { //si en la cadena type se encuentra la palabra application pasa por el if caso contrario pasa por el else debido a que es una image o audio
-                client.sendMessage(phone + '@c.us', media).then((response) => {
-                    if (response.id.fromMe) {
-                        res.send({
-                            status: 'success',
-                            message: 'MediaMessage successfully sent to ' + phone
-                        })
-                    }
-                });
-                if (message != ""||message !=undefined)
-                client.sendMessage(phone + '@c.us', message).then((response) => {});
+                if (message != ""&&message !=undefined){
+                    client.sendMessage(phone + '@c.us', message).then((response) => {
+                        client.sendMessage(phone + '@c.us', media).then((response) => {
+                            if (response.id.fromMe) {
+                                res.send({
+                                    status: 'success',
+                                    message: 'MediaMessage successfully sent to ' + phone
+                                })
+                                
+                            }
+                        });
+                    });
+                }else{
+                    client.sendMessage(phone + '@c.us', media).then((response) => {
+                        if (response.id.fromMe) {
+                            res.send({
+                                status: 'success',
+                                message: 'MediaMessage successfully sent to ' + phone
+                            })
+                            
+                        }
+                    });
+                }
             } else {
                 client.sendMessage(phone + '@c.us', media, {
                     caption: caption || "",

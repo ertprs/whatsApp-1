@@ -19,19 +19,23 @@ router.get('/checkauth', async (req, res) => {
 
 router.get('/getqr', (req, res) => {
     var qrjs = fs.readFileSync('components/qrcode.js');
-    fs.readFile(`./components/last${global.port}.qr`, (err, last_qr) => {
+
+    if (fs.existsSync(`./sesiones/session${global.port}.json`)) {
+        res.write("<html><body><h2>Already Authenticated</h2></body></html>");
+        res.end();
+    } else
         fs.readFile(`sesiones/session${global.port}.json`, (serr, sessiondata) => {
-            if (err && sessiondata) {
+            if (sessiondata) {
                 res.write("<html><body><h2>Already Authenticated</h2></body></html>");
                 res.end();
-            } else if (!err && serr) {
+            } else if (serr) {
                 var page = `
                     <html>
                         <body>
                             <script>${qrjs}</script>
                             <div id="qrcode"></div>
                             <script type="text/javascript">
-                                new QRCode(document.getElementById("qrcode"), "${last_qr}");
+                                new QRCode(document.getElementById("qrcode"), "${global.last_qr}");
                             </script>
                         </body>
                     </html>
@@ -40,11 +44,10 @@ router.get('/getqr', (req, res) => {
                 res.end();
             }
         })
-    });
 });
 
 router.post('/logout', async (req, res) => {
-    let password = req.body.password; //campo obligatorio
+    let password = req.body.password;
     client.getState().then((data) => {
         if (data == "CONNECTED") {
             if (password == global.passwordAdmin) {

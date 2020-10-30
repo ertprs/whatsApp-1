@@ -5,7 +5,8 @@
   "main": "api5008.js",
   "scripts": {
     "start": "node api5008.js",
-    "dev5008": "api5008.js",
+    "dev5010": "node api5010.js",
+    "api5010": "nodemon api5010.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -36,5 +37,8 @@
     "shelljs": "^0.8.4",
     "valid-url": "^1.0.9",
     "whatsapp-web.js": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
   }
 }
