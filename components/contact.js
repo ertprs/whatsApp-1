@@ -8,7 +8,7 @@ const verificarNum = (phone) => {
         phone = phone.replace("(", "");
         phone = phone.replace(")", "");
     }
-    if(phone.startsWith("52") && !phone.startsWith("521"))
+    if (phone.startsWith("52") && !phone.startsWith("521"))
         phone = phone.replace("52", "521");
     return phone;
 }
@@ -77,4 +77,5 @@ router.get('/isregistereduser/:phone', async (req, res) => {
         });
     }
 });
+
 module.exports = router;

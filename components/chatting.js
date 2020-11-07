@@ -23,7 +23,7 @@ const verificarNum = (phone) => {
         phone = phone.replace("(", "");
         phone = phone.replace(")", "");
     }
-    if(phone.startsWith("52") && !phone.startsWith("521"))
+    if (phone.startsWith("52") && !phone.startsWith("521"))
         phone = phone.replace("52", "521");
     return phone;
 }
@@ -44,11 +44,11 @@ router.post('/sendmessage/:phone', async (req, res) => { //método para enviar u
                     status: 'success',
                     message: 'Message successfully sent to ' + phone
                 })
-            }  
+            }
         }).catch(error => {
             console.log('caught', error.message);
-            let message = error.message + " desde la apiPort:"+global.port;
-            client.sendMessage(global.numTecnico + '@c.us',  message ).then((response) => {
+            let message = error.message + " desde la apiPort:" + global.port;
+            client.sendMessage(global.numTecnico + '@c.us', message).then((response) => {
                 res.send({
                     status: 'error',
                     message: 'Message unsuccessfully send'
@@ -77,7 +77,7 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
         if (base64regex.test(data)) { //comprueba si es que el campo image que contiene la base64 es correcta
             let media = new MessageMedia(type, data, filename); //el messageMedia recive 3 parametros: el mimetype(applicacion o image o audio),la base 64, y el nombre del archivo(opcional)
             if (type.indexOf("application") >= 0) { //si en la cadena type se encuentra la palabra application pasa por el if caso contrario pasa por el else debido a que es una image o audio
-                if (message != ""&&message !=undefined){
+                if (message != "" && message != undefined) {
                     client.sendMessage(phone + '@c.us', message).then((response) => {
                         client.sendMessage(phone + '@c.us', media).then((response) => {
                             if (response.id.fromMe) {
@@ -85,18 +85,18 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
                                     status: 'success',
                                     message: 'MediaMessage successfully sent to ' + phone
                                 })
-                                
+
                             }
                         });
                     });
-                }else{
+                } else {
                     client.sendMessage(phone + '@c.us', media).then((response) => {
                         if (response.id.fromMe) {
                             res.send({
                                 status: 'success',
                                 message: 'MediaMessage successfully sent to ' + phone
                             })
-                            
+
                         }
                     });
                 }
@@ -113,8 +113,8 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
                     }
                 }).catch(error => {
                     console.log('caught', error.message);
-                    let message = error.message + " desde la apiPort:"+global.port;
-                    client.sendMessage(global.numTecnico + '@c.us',  message ).then((response) => {
+                    let message = error.message + " desde la apiPort:" + global.port;
+                    client.sendMessage(global.numTecnico + '@c.us', message).then((response) => {
                         res.send({
                             status: 'error',
                             message: 'Message unsuccessfully send'
@@ -223,6 +223,47 @@ router.get('/getchats', async (req, res) => {
             message: "getchatserror"
         })
     })
+});
+
+router.post('/sendmultmessage/', async (req, res) => { //método para enviar un mensaje de texto
+    let phones = req.body.phones;//campo obligatorio
+    let message = req.body.message; //campo obligatorio
+
+    var controlNumeros = [];
+    var auxControl = {
+        phone: "",
+        status: ""
+    }
+    if (phones.length > 0) {
+        for (var i = 0; i < phones.length; i++) {
+            auxControl = {
+                phone: "",
+                status: ""
+            }
+            phones[i] = verificarNum(phones[i]);
+            client.sendMessage(phones[i] + '@c.us', message).then((response) => {
+                client.isRegisteredUser(response.id.remote.user + '@c.us').then((is) => {
+                    auxControl.phone=response.id.remote.user;
+                    if (is)
+                        auxControl.status="success";
+                    else
+                        auxControl.status="is not a whatsapp user";
+                    controlNumeros.push(JSON.parse(JSON.stringify(auxControl)));
+                    if(controlNumeros.length==phones.length){
+                        res.send({
+                            status: 'success',
+                            message: controlNumeros
+                        })
+                    }
+                })  
+            })        
+        }
+    }else
+        res.send({
+            status: 'error',
+            message: 'Lista de Números vacia'
+        });
+    
 });
 
 module.exports = router;

@@ -1,8 +1,8 @@
 {
     "port":5010,
     "webhook":{
-        "enabled":false,
-        "path":""
+        "enabled":true,
+        "path":"http://192.168.2.97:5010/chat/sendmessage/"
     },
     "passwordAdmin": "12345A",
     "responsable": "593983068302",

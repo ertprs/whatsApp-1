@@ -2,12 +2,19 @@
   "name": "whatsapp-node-api",
   "version": "0.0.2",
   "description": "A NodeJS API wrapper for whatsapp-web.js",
-  "main": "api5008.js",
+  "main": "",
   "scripts": {
-    "start": "node api5008.js",
+    "start": "",
     "dev5010": "node api5010.js",
     "api5010": "nodemon api5010.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "api25010": "forever start api5010.js"
+  },
+  "nodemonConfig": {
+    "delay": 2000,
+    "ignore": [
+      "configs/*",
+      "sesiones/*"
+    ]
   },
   "repository": {
     "type": "git",
@@ -19,24 +26,25 @@
     "whatsapp-web",
     "whatsapp"
   ],
-  "author": "Pranav M S",
+  "author": "Gian",
   "license": "CC-BY-NC",
   "bugs": {
     "url": "https://github.com/pranavms13/whatsapp-node-api/issues"
   },
-  "homepage": "https://github.com/pranavms13/whatsapp-node-api#readme",
+  "homepage": "",
   "dependencies": {
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "forever": "^3.0.2",
     "fs": "0.0.1-security",
     "http-server": "^0.12.3",
     "request": "^2.88.2",
     "shelljs": "^0.8.4",
     "valid-url": "^1.0.9",
-    "whatsapp-web.js": "^1.10.0"
+    "whatsapp-web.js": "^1.11.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.6"

@@ -4,9 +4,7 @@ const fs = require('fs');
 const axios = require('axios');
 const cors = require('cors');
 const config = require('./configs/config5010.json');
-const {
-    Client
-} = require('whatsapp-web.js');
+const {Client} = require('whatsapp-web.js');
 const app = express();
 
 /** rutas del componentes */
@@ -28,14 +26,8 @@ var SESSION_FILE_PATH = "";
 var sessionCfg = false;
 /*Configuraciones del express*/
 app.use(cors()); //para las los frontend que trabajan con cors (opcional)
-app.use(bodyParser.json({
-    limit: '100mb'
-})); //el limite 
-app.use(bodyParser.urlencoded({
-    limit: '100mb',
-    'extended': 'true',
-    parameterLimit: 100000
-})); //el limite 
+app.use(bodyParser.json({limit: '100mb'})); //el limite 
+app.use(bodyParser.urlencoded({limit: '100mb','extended': 'true',parameterLimit: 100000})); //el limite 
 
 process.title = "whatsapp-node-api";
 /**Main Proyect */
@@ -46,7 +38,6 @@ if (fs.existsSync(`./sesiones/session${port}.json`)) {
 }
 
 reiniciarCliente();
-
 
 /*Eventos On Cliente*/
 client.on('qr', qr => {
@@ -92,8 +83,9 @@ client.on('ready', () => {
 
 client.on('disconnected', (reason) => {
     console.log(fechaServer(), 'Client was logged out', reason);
-    //client.destroy();
-    reiniciarCliente();
+    /* client.destroy();
+    reiniciarCliente(); */
+    //nodemon.emit('restart');
 });
 
 client.on('change_state', (state) => {
@@ -104,6 +96,10 @@ client.on('message_create', (msg) => {
     if (msg.fromMe) {
         console.log(fechaServer(), "Client send message");
     }
+    /*console.log("prueba")
+    if(config.webhook.enabled){
+        axios.post(config.webhook.path, {message : "hola esto es un reply"})
+    }*/
 });
 
 client.on('change_battery', (batteryInfo) => {
@@ -119,7 +115,6 @@ client.on('change_battery', (batteryInfo) => {
         if (config.personaAux != null)
             client.sendMessage(config.personaAux + '@c.us', message);
     }
-
 });
 
 /**función que atrapar la peticion hhtp e imprime en consola */
@@ -172,7 +167,5 @@ function reiniciarCliente() {
         authTimeoutMs: 20000,
         restartOnAuthFail: true
     });
-    console.table(client);
-
     client.initialize();
 }

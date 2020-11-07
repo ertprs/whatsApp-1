@@ -66,16 +66,29 @@ router.post('/sendmedia/:chatname', async (req, res) => {
                         }
                         let media = new MessageMedia(type, data, filename);
                         if (type.indexOf("application") >= 0) {
-                            client.sendMessage(chat.id._serialized, media).then((response) => {
-                                if (response.id.fromMe) {
-                                    res.send({
-                                        status: 'success',
-                                        message: 'MediaMessage successfully sent to ' + chatname
-                                    })
-                                }
-                            });
-                            if (message != "" || message != undefined)
-                                client.sendMessage(chat.id._serialized, message).then((response) => {});
+                            if (message != ""&&message !=undefined){
+                                client.sendMessage(chat.id._serialized, message).then((response) => {
+                                    client.sendMessage(chat.id._serialized, media).then((response) => {
+                                        if (response.id.fromMe) {
+                                            res.send({
+                                                status: 'success',
+                                                message: 'MediaMessage successfully sent to ' + chatname
+                                            })
+                                            
+                                        }
+                                    });
+                                });
+                            }else{
+                                client.sendMessage(chat.id._serialized, message).then((response) => {
+                                    if (response.id.fromMe) {
+                                        res.send({
+                                            status: 'success',
+                                            message: 'MediaMessage successfully sent to ' + chatname
+                                        })
+                                        
+                                    }
+                                });
+                            }
                         } else {
                             client.sendMessage(chat.id._serialized, media, {
                                 caption: caption || "",
