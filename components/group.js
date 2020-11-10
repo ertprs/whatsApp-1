@@ -1,8 +1,5 @@
 const router = require('express').Router();
-const {
-    MessageMedia,
-    Location
-} = require("whatsapp-web.js");
+const {MessageMedia,Location} = require("whatsapp-web.js");
 const request = require('request')
 const vuri = require('valid-url');
 const fs = require('fs');
@@ -14,11 +11,34 @@ const mediadownloader = (url, path, callback) => {
             .on('close', callback)
     })
 }
+const transformarIcon = (message) => { // Verifica si es que existe iconos  :icon: para transformarlo en emoticon
+    var newMessage = ""; //nuevo mensaje
+    var arrayWord = []; //array para separar el message por  :
+    var missing = false; //variable bool para saber si se perdio el :
+    arrayWord = message.split(":");
+    if (arrayWord.length > 3) {
+        for (var i = 0; i < arrayWord.length; i++) {
+            if (emojiByName.hasOwnProperty(arrayWord[i])) { //pregunta si es que existe la propiedad en el emoji.json
+                arrayWord[i] = emojiByName[arrayWord[i]]; //lo remplaza
+                missing = false;
+            } else {
+                if (!missing)
+                    missing = true;
+                else {
+                    arrayWord[i] = ':' + arrayWord[i];
+                    missing = false;
+                }
+            }
+            newMessage = newMessage + arrayWord[i]; //concatena la nueva cadena
+        }
+    } else newMessage = message;
+    return newMessage;
+}
 
 router.post('/sendmessage/:chatname', async (req, res) => {
     let chatname = req.params.chatname;
     let message = req.body.message;
-
+    message = transformarIcon(message);
     if (chatname == undefined || message == undefined) {
         res.send({
             status: "error",
@@ -35,6 +55,15 @@ router.post('/sendmessage/:chatname', async (req, res) => {
                                 message: 'Message successfully send to ' + chatname
                             })
                         }
+                    }).catch(error => {
+                        console.log('caught', error.message);
+                        let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmessage de group";
+                        client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
+                            res.send({
+                                status: 'success',
+                                message: 'Message unsuccessfully send'
+                            })
+                        });
                     });
                 }
             });
@@ -67,6 +96,7 @@ router.post('/sendmedia/:chatname', async (req, res) => {
                         let media = new MessageMedia(type, data, filename);
                         if (type.indexOf("application") >= 0) {
                             if (message != ""&&message !=undefined){
+                                message = transformarIcon(message); //transformar si es que tiene iconos
                                 client.sendMessage(chat.id._serialized, message).then((response) => {
                                     client.sendMessage(chat.id._serialized, media).then((response) => {
                                         if (response.id.fromMe) {
@@ -76,6 +106,15 @@ router.post('/sendmedia/:chatname', async (req, res) => {
                                             })
                                             
                                         }
+                                    });
+                                }).catch(error => {
+                                    console.log('caught', error.message);
+                                    let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmedia group para el tipo: " + type;
+                                    client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
+                                        res.send({
+                                            status: 'success',
+                                            message: 'Message unsuccessfully send'
+                                        })
                                     });
                                 });
                             }else{
@@ -102,6 +141,13 @@ router.post('/sendmedia/:chatname', async (req, res) => {
                                 }
                             }).catch(error => {
                                 console.log('caught', error.message);
+                                let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmedia group para el tipo: " + type;
+                                client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
+                                    res.send({
+                                        status: 'success',
+                                        message: 'Message unsuccessfully send'
+                                    })
+                                });
                             });
                         }
                     }

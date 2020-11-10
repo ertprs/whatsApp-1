@@ -2,10 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require('fs');
 const axios = require('axios');
-const cors = require('cors');
 const config = require('./configs/config5010.json');
-const {Client} = require('whatsapp-web.js');
 const app = express();
+const cors = require('cors');
+const {Client} = require('whatsapp-web.js');
 
 /** rutas del componentes */
 const chatRoute = require('./components/chatting');
@@ -18,12 +18,12 @@ global.port = process.env.PORT || config.port;
 global.passwordAdmin = config.passwordAdmin;
 global.numTecnico = config.numTecnico;
 global.responsable = config.responsable;
-
 global.last_qr;
 
 /*Variables Locales*/
 var SESSION_FILE_PATH = "";
 var sessionCfg = false;
+
 /*Configuraciones del express*/
 app.use(cors()); //para las los frontend que trabajan con cors (opcional)
 app.use(bodyParser.json({limit: '100mb'})); //el limite 
@@ -51,7 +51,7 @@ client.on('qr', qr => {
     }
 });
 
-client.on('authenticated', (session) => { //tengo que hacer cambios
+client.on('authenticated', (session) => {
     console.log(fechaServer(), "AUTH!");
     SESSION_FILE_PATH = `./sesiones/session${global.port}.json`;
     if (fs.existsSync(`./sesiones/session${global.port}.json`)) {
@@ -63,9 +63,6 @@ client.on('authenticated', (session) => { //tengo que hacer cambios
             }
             global.authed = true;
         });
-        try {
-
-        } catch (err) {}
     }
 });
 
@@ -75,6 +72,9 @@ client.on('auth_failure', () => {
     if (fs.existsSync(`./sesiones/session${global.port}.json`)) {
         fs.unlinkSync(`./sesiones/session${global.port}.json`);
     }
+    if(config.webhook.enabled){
+        axios.post(config.webhook.path+config.responsable, {message : "Buen día, le informamos que la autentificación ha fallado. \n *!Por favor intente logearse de nuevo usando un nuevo código QR!*"})
+    }
 });
 
 client.on('ready', () => {
@@ -83,9 +83,9 @@ client.on('ready', () => {
 
 client.on('disconnected', (reason) => {
     console.log(fechaServer(), 'Client was logged out', reason);
-    /* client.destroy();
-    reiniciarCliente(); */
-    //nodemon.emit('restart');
+    if(config.webhook.enabled){
+        axios.post(config.webhook.path+config.responsable, {message : "Buen día, le informamos que la base celular se ha desconectado. \n *!Por favor intente logearse de nuevo!*"})
+    }
 });
 
 client.on('change_state', (state) => {
@@ -96,24 +96,22 @@ client.on('message_create', (msg) => {
     if (msg.fromMe) {
         console.log(fechaServer(), "Client send message");
     }
-    /*console.log("prueba")
-    if(config.webhook.enabled){
-        axios.post(config.webhook.path, {message : "hola esto es un reply"})
-    }*/
 });
 
 client.on('change_battery', (batteryInfo) => {
     // Battery percentage for attached device has changed
-    const {
-        battery,
-        plugged
-    } = batteryInfo;
+    const {battery,plugged} = batteryInfo;
     if (batteryInfo.battery <= config.avisocarga && !batteryInfo.plugged) {
         console.log(fechaServer(), "La carga descendió del " + config.avisocarga + "%");
         let message = "Buen día, le informamos que la base celular reporta un descenso de carga eléctrica al " + batteryInfo.battery + "% \n *!Por favor conectar el cargador!*";
         client.sendMessage(config.responsable + '@c.us', message);
         if (config.personaAux != null)
             client.sendMessage(config.personaAux + '@c.us', message);
+        if(batteryInfo.battery==0 && config.webhook.enabled){
+            console.log("igual a 0");
+            axios.post(config.webhook.path+config.responsable, {message : "Buen día, le informamos que la base celular se ha descargado completamente, los mensajes se quedaran en espera. \n *!Por favor cargar el celular!*"})
+        }
+            
     }
 });
 
