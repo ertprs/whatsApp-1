@@ -28,7 +28,7 @@ var sessionCfg = false;
 app.use(cors()); //para las los frontend que trabajan con cors (opcional)
 app.use(bodyParser.json({limit: '100mb'})); //el limite 
 app.use(bodyParser.urlencoded({limit: '100mb','extended': 'true',parameterLimit: 100000})); //el limite 
-
+app.use(express.json());
 process.title = "whatsapp-node-api";
 /**Main Proyect */
 
@@ -43,9 +43,6 @@ reiniciarCliente();
 client.on('qr', qr => {
     console.log(fechaServer(), 'No existe una sesión activa, se procede a crear una nueva');
     console.log(fechaServer(), `Ingrese o recargue la página: http://localhost:${global.port}/auth/getqr`);
-    if (fs.existsSync(`./sesiones/session${global.port}.json`)) {
-        fs.unlinkSync(`./sesiones/session${global.port}.json`);
-    }
     if (qr != global.last_qr) {
         global.last_qr = qr;
     }
@@ -69,12 +66,20 @@ client.on('authenticated', (session) => {
 client.on('auth_failure', () => {
     console.log(fechaServer(), "AUTH Failed!");
     sessionCfg = false;
-    if (fs.existsSync(`./sesiones/session${global.port}.json`)) {
+    /**Parte de borrado automatico Método 1 estilo gian*/
+    /*if (fs.existsSync(`./sesiones/session${global.port}.json`)) {
         fs.unlinkSync(`./sesiones/session${global.port}.json`);
-    }
-    if(config.webhook.enabled){
-        axios.post(config.webhook.path+config.responsable, {message : "Buen día, le informamos que la autentificación ha fallado. \n *!Por favor intente logearse de nuevo usando un nuevo código QR!*"})
-    }
+    }*/
+    /*if(config.webhook.enabled){
+        axios.post(config.webhook.path+config.responsable, {message : "Buen día, le informamos que la autentificación ha fallado. \n *!Por favor intente logearse de nuevo usando un nuevo código QR! *"})
+    }*/
+    /**Parte de borrado manual Método 2 estilo jairo */
+    /*if(config.webhook.enabled){
+        axios.post(config.webhook.path+config.responsable+'?number=Phone03', {message : "Buen día, le informamos que la autentificación ha fallado. \n*!Por favor verificar que su dispositivo base "+config.numBase +" este encendio y conectado a una red con acceso a internet.*\nComunicar lo solucionado a\nhttps://wa.me/"+config.numTecnico +"MUCHAS GRACIAS"});
+        if(config.personaAux != null)
+        axios.post(config.webhook.path+config.personaAux+'?number=Phone03', {message : "Buen día, le informamos que la autentificación ha fallado. \n*!Por favor verificar que su dispositivo base "+config.numBase +" este encendio y conectado a una red con acceso a internet*"});
+        axios.post(config.webhook.path+config.numTecnico+'?number=Phone03', {message : "La autentificación ha fallado en la base celular "+ config.numBase + " desde la apiPort:" + config.port});
+    }*/
 });
 
 client.on('ready', () => {
@@ -83,6 +88,7 @@ client.on('ready', () => {
 
 client.on('disconnected', (reason) => {
     console.log(fechaServer(), 'Client was logged out', reason);
+    
     if(config.webhook.enabled){
         axios.post(config.webhook.path+config.responsable, {message : "Buen día, le informamos que la base celular se ha desconectado. \n *!Por favor intente logearse de nuevo!*"})
     }
@@ -157,8 +163,10 @@ const fechaServer = () => {
 function reiniciarCliente() {
     global.authed = false;
     global.client = new Client({
-        puppeteer: {
-            headless: true
+        puppeteer: { 
+            executablePath:"C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+            headless: true, 
+            args:['--no-sandbox','--disable-setuid-sandbox','--unhandled-rejections=strict'] 
         },
         session: sessionCfg,
         takeoverOnConflict: true,

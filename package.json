@@ -38,13 +38,13 @@
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "forever": "^3.0.2",
+    "forever": "^3.0.4",
     "fs": "0.0.1-security",
     "http-server": "^0.12.3",
     "request": "^2.88.2",
     "shelljs": "^0.8.4",
     "valid-url": "^1.0.9",
-    "whatsapp-web.js": "^1.11.0"
+    "whatsapp-web.js": "^1.11.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.6"

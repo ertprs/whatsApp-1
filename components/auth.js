@@ -19,7 +19,6 @@ router.get('/checkauth', async (req, res) => {
 
 router.get('/getqr', (req, res) => {
     var qrjs = fs.readFileSync('components/qrcode.js');
-
     if (fs.existsSync(`./sesiones/session${global.port}.json`)) {
         res.write("<html><body><h2>Already Authenticated</h2></body></html>");
         res.end();

@@ -34,18 +34,15 @@ const transformarIcon = (message) => { // Verifica si es que existe iconos  :ico
     var arrayWord = []; //array para separar el message por  :
     var missing = false; //variable bool para saber si se perdio el :
     arrayWord = message.split(":");
-    if (arrayWord.length > 3) {
+    if (arrayWord.length > 2) {
         for (var i = 0; i < arrayWord.length; i++) {
             if (emojiByName.hasOwnProperty(arrayWord[i])) { //pregunta si es que existe la propiedad en el emoji.json
                 arrayWord[i] = emojiByName[arrayWord[i]]; //lo remplaza
                 missing = false;
             } else {
-                if (!missing)
-                    missing = true;
-                else {
+                if (missing)
                     arrayWord[i] = ':' + arrayWord[i];
-                    missing = false;
-                }
+                missing = true;
             }
             newMessage = newMessage + arrayWord[i]; //concatena la nueva cadena
         }
@@ -61,16 +58,14 @@ router.post('/sendmessage/:phone', async (req, res) => { //método para enviar u
     if (phone == undefined || message == undefined) {
         res.send({
             status: "error",
-            message: "please enter valid phone and message"
+            message: "Porfavor revisar que el Número o el Mensaje sean validos"
         })
     } else {
         client.sendMessage(phone + '@c.us', message).then((response) => {
-            if (response.id.fromMe) {
-                res.send({
-                    status: 'success',
-                    message: 'Message successfully sent to ' + phone
-                })
-            }
+            res.send({
+                status: 'success',
+                message: 'Message successfully sent to ' + phone
+            })
         }).catch(error => {
             console.log('caught', error.message);
             let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmessage";
@@ -97,7 +92,7 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
     if (phone == undefined || data == undefined) {
         res.send({
             status: "error",
-            message: "please enter valid phone and base64/url"
+            message: "Porfavor revisar que el Número o el Archivo sean validos"
         })
     } else {
         if (base64regex.test(data)) { //comprueba si es que el campo image que contiene la base64 es correcta
@@ -107,13 +102,10 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
                     message = transformarIcon(message); //transformar si es que tiene iconos
                     client.sendMessage(phone + '@c.us', message).then((response) => {
                         client.sendMessage(phone + '@c.us', media).then((response) => {
-                            if (response.id.fromMe) {
-                                res.send({
-                                    status: 'success',
-                                    message: 'MediaMessage successfully sent to ' + phone
-                                })
-
-                            }
+                            res.send({
+                                status: 'success',
+                                message: 'MediaMessage successfully sent to ' + phone
+                            })
                         });
                     }).catch(error => {
                         console.log('caught', error.message);
@@ -127,13 +119,10 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
                     });
                 } else {
                     client.sendMessage(phone + '@c.us', media).then((response) => {
-                        if (response.id.fromMe) {
-                            res.send({
-                                status: 'success',
-                                message: 'MediaMessage successfully sent to ' + phone
-                            })
-
-                        }
+                        res.send({
+                            status: 'success',
+                            message: 'MediaMessage successfully sent to ' + phone
+                        })
                     }).catch(error => {
                         console.log('caught', error.message);
                         let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmedia para el tipo: " + type;
@@ -146,16 +135,16 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
                     });
                 }
             } else {
+                if (caption != "" && caption != undefined)
+                    caption = transformarIcon(caption); //transformar si es que tiene iconos
                 client.sendMessage(phone + '@c.us', media, {
                     caption: caption || "",
                     sendAudioAsVoice: true
                 }).then((response) => {
-                    if (response.id.fromMe) {
-                        res.send({
-                            status: 'success',
-                            message: 'MediaMessage successfully sent to ' + phone
-                        })
-                    }
+                    res.send({
+                        status: 'success',
+                        message: 'MediaMessage successfully sent to ' + phone
+                    })
                 }).catch(error => {
                     console.log('caught', error.message);
                     let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmedia para el tipo: " + type;
@@ -167,42 +156,10 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
                     });
                 });
             }
-        } else if (vuri.isWebUri(data)) {
-            if (!fs.existsSync('./temp')) {
-                await fs.mkdirSync('./temp');
-            }
-            var path = './temp/' + data.split("/").slice(-1)[0]
-            mediadownloader(data, path, () => {
-                let media = MessageMedia.fromFilePath(path);
-                if (type.indexOf("application") >= 0) {
-                    client.sendMessage(phone + '@c.us', media).then((response) => {
-                        if (response.id.fromMe) {
-                            res.send({
-                                status: 'success',
-                                message: 'MediaMessage successfully sent to ' + phone
-                            })
-                        }
-                    });
-                } else {
-                    client.sendMessage(phone + '@c.us', media, {
-                        caption: caption || "",
-                        sendAudioAsVoice: true
-                    }).then((response) => {
-                        if (response.id.fromMe) {
-                            res.send({
-                                status: 'success',
-                                message: 'MediaMessage successfully sent to ' + phone
-                            })
-                        }
-                    });
-                }
-            })
-        } else {
-            res.send({
-                status: 'error',
-                message: 'Invalid URL/Base64 Encoded Media'
-            })
-        }
+        }else res.send({
+            status: "error",
+            message: "Mal dato al transformar a la base64"
+        })
     }
 });
 
@@ -273,7 +230,7 @@ router.get('/getchats', async (req, res) => {
 router.post('/sendmultmessage/', async (req, res) => { //método para enviar un mensaje de texto a varios usuarios
     let phones = req.body.phones; //campo obligatorio
     let message = req.body.message; //campo obligatorio
-    
+
     var controlNumeros = [];
     var auxControl = {
         phone: "",
@@ -294,7 +251,7 @@ router.post('/sendmultmessage/', async (req, res) => { //método para enviar un 
                         auxControl.status = "success";
                     else
                         auxControl.status = "is not a whatsapp user";
-                    controlNumeros.push(JSON.parse(JSON.stringify(auxControl)));//guarda en el array los números y el resultado del envio
+                    controlNumeros.push(JSON.parse(JSON.stringify(auxControl))); //guarda en el array los números y el resultado del envio
                     if (controlNumeros.length == phones.length) {
                         res.send({
                             status: 'success',

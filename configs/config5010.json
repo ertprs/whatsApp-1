@@ -1,12 +1,13 @@
 {
     "port":5010,
     "webhook":{
-        "enabled":true,
-        "path":"http://192.168.2.97:5010/chat/sendmessage/"
+        "enabled":false,
+        "path":"http://mywhatsapp.jca.ec:5001/chat/sendmessage/"
     },
+    "numBase":"593999786121",
     "passwordAdmin": "12345A",
-    "responsable": "593983068302",
-    "numTecnico": "593984958499",
+    "responsable": "593984958499",
+    "numTecnico": "593999786121",
     "personaAux": null,
     "avisocarga": 20
 }
