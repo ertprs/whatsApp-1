@@ -137,26 +137,50 @@ router.post('/sendmedia/:phone', async (req, res) => { //método para enviar ima
             } else {
                 if (caption != "" && caption != undefined)
                     caption = transformarIcon(caption); //transformar si es que tiene iconos
-                client.sendMessage(phone + '@c.us', media, {
-                    caption: caption || "",
-                    sendAudioAsVoice: true
-                }).then((response) => {
-                    res.send({
-                        status: 'success',
-                        message: 'MediaMessage successfully sent to ' + phone
-                    })
-                }).catch(error => {
-                    console.log('caught', error.message);
-                    let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmedia para el tipo: " + type;
-                    client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
-                        res.send({
-                            status: 'error',
-                            message: 'Message unsuccessfully send'
-                        })
+                if (message != "" && message != undefined) {
+                    message = transformarIcon(message); //transformar si es que tiene iconos
+                    client.sendMessage(phone + '@c.us', message).then((response) => {
+                        client.sendMessage(phone + '@c.us', media, {
+                            caption: caption || "",
+                            sendAudioAsVoice: true
+                        }).then((response) => {
+                            res.send({
+                                status: 'success',
+                                message: 'MediaMessage successfully sent to ' + phone
+                            })
+                        });
+                    }).catch(error => {
+                        console.log('caught', error.message);
+                        let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmedia para el tipo: " + type;
+                        client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
+                            res.send({
+                                status: 'success',
+                                message: 'Message unsuccessfully send'
+                            })
+                        });
                     });
-                });
+                } else {
+                    client.sendMessage(phone + '@c.us', media, {
+                        caption: caption || "",
+                        sendAudioAsVoice: true
+                    }).then((response) => {
+                        res.send({
+                            status: 'success',
+                            message: 'MediaMessage successfully sent to ' + phone
+                        })
+                    }).catch(error => {
+                        console.log('caught', error.message);
+                        let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmedia para el tipo: " + type;
+                        client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
+                            res.send({
+                                status: 'error',
+                                message: 'Message unsuccessfully send'
+                            })
+                        });
+                    });
+                }
             }
-        }else res.send({
+        } else res.send({
             status: "error",
             message: "Mal dato al transformar a la base64"
         })

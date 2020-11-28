@@ -128,27 +128,51 @@ router.post('/sendmedia/:chatname', async (req, res) => {
                                     });
                                 });
                             }
-                        } else {
+                        }else {
                             if (caption != "" && caption != undefined)
                                 caption = transformarIcon(caption); //transformar si es que tiene iconos
-                            client.sendMessage(chat.id._serialized, media, {
-                                caption: caption || "",
-                                sendAudioAsVoice: true
-                            }).then((response) => {
-                                res.send({
-                                    status: 'success',
-                                    message: 'MediaMessage successfully sent to ' + chatname
-                                })
-                            }).catch(error => {
-                                console.log('caught', error.message);
-                                let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmedia group para el tipo: " + type;
-                                client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
+                            if (message != "" && message != undefined) {
+                                message = transformarIcon(message); //transformar si es que tiene iconos
+                                client.sendMessage(chat.id._serialized + '@c.us', message).then((response) => {
+                                    client.sendMessage(chat.id._serialized + '@c.us', media, {
+                                        caption: caption || "",
+                                        sendAudioAsVoice: true
+                                    }).then((response) => {
+                                        res.send({
+                                            status: 'success',
+                                            message: 'MediaMessage successfully sent to ' + chatname
+                                        })
+                                    });
+                                }).catch(error => {
+                                    console.log('caught', error.message);
+                                    let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmediaGroup para el tipo: " + type;
+                                    client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
+                                        res.send({
+                                            status: 'success',
+                                            message: 'Message unsuccessfully send'
+                                        })
+                                    });
+                                });
+                            } else {
+                                client.sendMessage(chat.id._serialized + '@c.us', media, {
+                                    caption: caption || "",
+                                    sendAudioAsVoice: true
+                                }).then((response) => {
                                     res.send({
                                         status: 'success',
-                                        message: 'Message unsuccessfully send'
+                                        message: 'MediaMessage successfully sent to ' + chatname
                                     })
+                                }).catch(error => {
+                                    console.log('caught', error.message);
+                                    let messageT = error.message + " desde la apiPort:" + global.port + " en el método sendmediaGroup para el tipo: " + type;
+                                    client.sendMessage(global.numTecnico + '@c.us', messageT).then((response) => {
+                                        res.send({
+                                            status: 'error',
+                                            message: 'Message unsuccessfully send'
+                                        })
+                                    });
                                 });
-                            });
+                            }
                         }
                     }
                 });
@@ -160,7 +184,7 @@ router.post('/sendmedia/:chatname', async (req, res) => {
     }
 });
 
-router.post('/sendGroup/:chatname', async (req, res) => {
+/* router.post('/sendGroup/:chatname', async (req, res) => {
     var base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
     let chatname = req.params.chatname; //campo obligatorio
     let data = req.body.media; //campo obligatorio
@@ -277,7 +301,7 @@ router.post('/sendGroup/:chatname', async (req, res) => {
             })
         }
     }
-});
+}); */
 
 router.post('/sendlocation/:chatname', async (req, res) => {
     let chatname = req.params.chatname;
